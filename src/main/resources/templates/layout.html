@@ -1,0 +1,754 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク管理システム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        
+        .back-button {
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .back-button:hover {
+            background-color: #7f8c8d;
+        }
+        
+        /* タスク一覧画面のスタイル */
+        .task-list-screen {
+            display: block;
+        }
+        
+        /* フィルタ・ソート機能 */
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-label {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .filter-select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+        
+        .sort-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .sort-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .sort-button.active {
+            background-color: #2c3e50;
+        }
+        
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .task-table th,
+        .task-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .task-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .task-table th:hover {
+            background-color: #e9ecef;
+        }
+        
+        .task-table th::after {
+            content: ' ↕';
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .task-table th.sort-asc::after {
+            content: ' ↑';
+            color: #333;
+        }
+        
+        .task-table th.sort-desc::after {
+            content: ' ↓';
+            color: #333;
+        }
+        
+        .task-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .progress-select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .delete-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+        
+        /* タスク編集画面のスタイル */
+        .task-edit-screen {
+            display: none;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .form-textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .team-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .team-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .team-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .team-button.selected {
+            background-color: #2c3e50;
+        }
+        
+        .date-group {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .date-group .form-group {
+            flex: 1;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-success:hover {
+            background-color: #229954;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- タスク一覧画面 -->
+    <div id="taskListScreen" class="container task-list-screen">
+        <div class="header">
+            <h1>タスク一覧</h1>
+        </div>
+        
+        <button class="btn-primary" onclick="showEditScreen()">新規タスク作成</button>
+        
+        <!-- フィルタ・ソート機能 -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">チーム:</label>
+                    <select id="teamFilter" class="filter-select" onchange="filterTasks()">
+                        <option value="">全て</option>
+                        <option value="教材開発チーム">教材開発チーム</option>
+                        <option value="研修納品チーム">研修納品チーム</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">担当者:</label>
+                    <select id="assigneeFilter" class="filter-select" onchange="filterTasks()">
+                        <option value="">全て</option>
+                        <option value="田中太郎">田中太郎</option>
+                        <option value="佐藤花子">佐藤花子</option>
+                        <option value="鈴木一郎">鈴木一郎</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">ステータス:</label>
+                    <select id="statusFilter" class="filter-select" onchange="filterTasks()">
+                        <option value="">全て</option>
+                        <option value="未実施">未実施</option>
+                        <option value="実施中">実施中</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th onclick="sortTable('taskName')">タスク名</th>
+                    <th onclick="sortTable('description')">説明</th>
+                    <th onclick="sortTable('endDate')">期限</th>
+                    <th onclick="sortTable('priority')">優先度</th>
+                    <th onclick="sortTable('assignee')">担当者</th>
+                    <th onclick="sortTable('team')">チーム</th>
+                    <th onclick="sortTable('status')">ステータス</th>
+                    <th>完了・削除</th>
+                </tr>
+            </thead>
+            <tbody id="taskTableBody">
+                <!-- サンプルデータ -->
+                <tr data-team="教材開発チーム" data-assignee="田中太郎" data-status="実施中">
+                    <td>サンプルタスク1</td>
+                    <td>これはサンプルの説明です</td>
+                    <td>2024/12/31</td>
+                    <td>高</td>
+                    <td>田中太郎</td>
+                    <td>教材開発チーム</td>
+                    <td>
+                        <select class="progress-select" onchange="updateTaskStatus(this)">
+                            <option value="未実施">未実施</option>
+                            <option value="実施中" selected>実施中</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="delete-button" onclick="deleteTask(this)">削除</button>
+                    </td>
+                </tr>
+                <tr data-team="研修納品チーム" data-assignee="佐藤花子" data-status="未実施">
+                    <td>サンプルタスク2</td>
+                    <td>別のサンプルタスク</td>
+                    <td>2024/11/30</td>
+                    <td>中</td>
+                    <td>佐藤花子</td>
+                    <td>研修納品チーム</td>
+                    <td>
+                        <select class="progress-select" onchange="updateTaskStatus(this)">
+                            <option value="未実施" selected>未実施</option>
+                            <option value="実施中">実施中</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="delete-button" onclick="deleteTask(this)">削除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- タスク編集画面 -->
+    <div id="taskEditScreen" class="container task-edit-screen">
+        <div class="header">
+            <h1>タスク編集</h1>
+        </div>
+        
+        <button class="back-button" onclick="showListScreen()">タスク一覧に戻る</button>
+        
+        <form id="taskForm">
+            <div class="form-group">
+                <label class="form-label">チーム</label>
+                <div class="team-buttons">
+                    <button type="button" class="team-button" onclick="selectTeam(this, '教材開発チーム')">教材開発チーム</button>
+                    <button type="button" class="team-button" onclick="selectTeam(this, '研修納品チーム')">研修納品チーム</button>
+                </div>
+                <input type="hidden" id="selectedTeam" name="team">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="taskName">タスク名</label>
+                <input type="text" id="taskName" name="taskName" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">実施期間</label>
+                <div class="date-group">
+                    <div class="form-group">
+                        <label class="form-label" for="startDate">タスク開始日</label>
+                        <input type="date" id="startDate" name="startDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="endDate">タスク完了予定日</label>
+                        <input type="date" id="endDate" name="endDate" class="form-input">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="assignee">担当者</label>
+                <select id="assignee" name="assignee" class="form-select" required>
+                    <option value="">選択してください</option>
+                    <option value="田中太郎">田中太郎</option>
+                    <option value="佐藤花子">佐藤花子</option>
+                    <option value="鈴木一郎">鈴木一郎</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="description">説明</label>
+                <textarea id="description" name="description" class="form-textarea" placeholder="タスクの詳細説明を入力してください"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="priority">優先度</label>
+                <select id="priority" name="priority" class="form-select" required>
+                    <option value="">選択してください</option>
+                    <option value="高">高</option>
+                    <option value="中">中</option>
+                    <option value="低">低</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="progress">進捗</label>
+                <select id="progress" name="progress" class="form-select">
+                    <option value="未実施">未実施</option>
+                    <option value="実施中">実施中</option>
+                </select>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="button" class="btn-success" onclick="registerTask()">登録</button>
+                <button type="button" class="btn-primary" onclick="updateTask()">変更</button>
+                <button type="button" class="btn-danger" onclick="completeAndDeleteTask()">完了・削除</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // タスクデータを保存する配列
+        let tasks = [
+            {
+                id: 1,
+                taskName: 'サンプルタスク1',
+                description: 'これはサンプルの説明です',
+                endDate: '2024/12/31',
+                priority: '高',
+                assignee: '田中太郎',
+                team: '教材開発チーム',
+                status: '実施中'
+            },
+            {
+                id: 2,
+                taskName: 'サンプルタスク2',
+                description: '別のサンプルタスク',
+                endDate: '2024/11/30',
+                priority: '中',
+                assignee: '佐藤花子',
+                team: '研修納品チーム',
+                status: '未実施'
+            }
+        ];
+        
+        let nextTaskId = 3;
+        let currentSort = { column: '', direction: 'asc' };
+        
+        // 画面切り替え機能
+        function showEditScreen() {
+            document.getElementById('taskListScreen').style.display = 'none';
+            document.getElementById('taskEditScreen').style.display = 'block';
+        }
+        
+        function showListScreen() {
+            document.getElementById('taskEditScreen').style.display = 'none';
+            document.getElementById('taskListScreen').style.display = 'block';
+            renderTasks();
+        }
+        
+        // チーム選択機能
+        function selectTeam(button, teamName) {
+            document.querySelectorAll('.team-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            button.classList.add('selected');
+            document.getElementById('selectedTeam').value = teamName;
+        }
+        
+        // タスクの表示を更新
+        function renderTasks() {
+            const tbody = document.getElementById('taskTableBody');
+            tbody.innerHTML = '';
+            
+            // フィルタリング
+            let filteredTasks = filterTasksData();
+            
+            // ソート
+            if (currentSort.column) {
+                filteredTasks = sortTasksData(filteredTasks);
+            }
+            
+            // テーブル行を生成
+            filteredTasks.forEach(task => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-team', task.team);
+                row.setAttribute('data-assignee', task.assignee);
+                row.setAttribute('data-status', task.status);
+                row.setAttribute('data-id', task.id);
+                
+                row.innerHTML = `
+                    <td>${task.taskName}</td>
+                    <td>${task.description}</td>
+                    <td>${task.endDate}</td>
+                    <td>${task.priority}</td>
+                    <td>${task.assignee}</td>
+                    <td>${task.team}</td>
+                    <td>
+                        <select class="progress-select" onchange="updateTaskStatus(this)">
+                            <option value="未実施" ${task.status === '未実施' ? 'selected' : ''}>未実施</option>
+                            <option value="実施中" ${task.status === '実施中' ? 'selected' : ''}>実施中</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="delete-button" onclick="deleteTask(this)">削除</button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // フィルタリング機能
+        function filterTasks() {
+            renderTasks();
+        }
+        
+        function filterTasksData() {
+            const teamFilter = document.getElementById('teamFilter').value;
+            const assigneeFilter = document.getElementById('assigneeFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            return tasks.filter(task => {
+                return (!teamFilter || task.team === teamFilter) &&
+                       (!assigneeFilter || task.assignee === assigneeFilter) &&
+                       (!statusFilter || task.status === statusFilter);
+            });
+        }
+        
+        // ソート機能
+        function sortTable(column) {
+            // ソート方向の決定
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+            
+            // ヘッダーのソート表示を更新
+            updateSortHeaders();
+            
+            // テーブルを再描画
+            renderTasks();
+        }
+        
+        function sortTasksData(tasksToSort) {
+            return tasksToSort.sort((a, b) => {
+                let aValue = a[currentSort.column];
+                let bValue = b[currentSort.column];
+                
+                // 日付の場合は Date オブジェクトに変換
+                if (currentSort.column === 'endDate') {
+                    aValue = new Date(aValue.replace(/\//g, '-'));
+                    bValue = new Date(bValue.replace(/\//g, '-'));
+                }
+                
+                // 優先度の場合は数値に変換
+                if (currentSort.column === 'priority') {
+                    const priorityMap = { '高': 3, '中': 2, '低': 1 };
+                    aValue = priorityMap[aValue] || 0;
+                    bValue = priorityMap[bValue] || 0;
+                }
+                
+                if (aValue < bValue) {
+                    return currentSort.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return currentSort.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        
+        function updateSortHeaders() {
+            // 全てのヘッダーからソートクラスを削除
+            document.querySelectorAll('.task-table th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+            
+            // 現在のソート列にクラスを追加
+            const headers = document.querySelectorAll('.task-table th');
+            const columnIndex = ['taskName', 'description', 'endDate', 'priority', 'assignee', 'team', 'status'].indexOf(currentSort.column);
+            if (columnIndex >= 0 && headers[columnIndex]) {
+                headers[columnIndex].classList.add(`sort-${currentSort.direction}`);
+            }
+        }
+        
+        // タスクステータス更新
+        function updateTaskStatus(selectElement) {
+            const row = selectElement.closest('tr');
+            const taskId = parseInt(row.getAttribute('data-id'));
+            const newStatus = selectElement.value;
+            
+            // データを更新
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.status = newStatus;
+                row.setAttribute('data-status', newStatus);
+            }
+        }
+        
+        // タスク削除機能
+        function deleteTask(button) {
+            if (confirm('このタスクを削除しますか？')) {
+                const row = button.closest('tr');
+                const taskId = parseInt(row.getAttribute('data-id'));
+                
+                // データから削除
+                tasks = tasks.filter(task => task.id !== taskId);
+                
+                // 表示を更新
+                renderTasks();
+            }
+        }
+        
+        // フォーム送信機能
+        function registerTask() {
+            if (validateForm()) {
+                const formData = getFormData();
+                
+                // 新しいタスクを追加
+                const newTask = {
+                    id: nextTaskId++,
+                    taskName: formData.taskName,
+                    description: formData.description,
+                    endDate: formData.endDate,
+                    priority: formData.priority,
+                    assignee: formData.assignee,
+                    team: formData.team,
+                    status: formData.progress
+                };
+                
+                tasks.push(newTask);
+                
+                alert('タスクが登録されました');
+                showListScreen();
+                resetForm();
+            }
+        }
+        
+        function updateTask() {
+            if (validateForm()) {
+                alert('タスクが更新されました');
+                showListScreen();
+                resetForm();
+            }
+        }
+        
+        function completeAndDeleteTask() {
+            if (confirm('このタスクを完了・削除しますか？')) {
+                alert('タスクが完了・削除されました');
+                showListScreen();
+                resetForm();
+            }
+        }
+        
+        // フォームデータ取得
+        function getFormData() {
+            return {
+                team: document.getElementById('selectedTeam').value,
+                taskName: document.getElementById('taskName').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                assignee: document.getElementById('assignee').value,
+                description: document.getElementById('description').value,
+                priority: document.getElementById('priority').value,
+                progress: document.getElementById('progress').value
+            };
+        }
+        
+        // フォームバリデーション
+        function validateForm() {
+            const formData = getFormData();
+            
+            if (!formData.team) {
+                alert('チームを選択してください');
+                return false;
+            }
+            
+            if (!formData.taskName.trim()) {
+                alert('タスク名を入力してください');
+                return false;
+            }
+            
+            if (!formData.assignee) {
+                alert('担当者を選択してください');
+                return false;
+            }
+            
+            if (!formData.priority) {
+                alert('優先度を選択してください');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // フォームリセット
+        function resetForm() {
+            document.getElementById('taskForm').reset();
+            document.getElementById('selectedTeam').value = '';
+            document.querySelectorAll('.team-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+        }
+        
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTasks();
+        });
+    </script>
+</body>
+</html>
